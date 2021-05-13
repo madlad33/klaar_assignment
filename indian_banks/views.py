@@ -5,6 +5,8 @@ from .models import Banks, Branches
 from .serializers import BankSerializer, BranchSerialzier
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class AutoCompleteView(ListAPIView, LimitOffsetPagination):
@@ -14,8 +16,17 @@ class AutoCompleteView(ListAPIView, LimitOffsetPagination):
 
     def get_queryset(self):
         branch = self.request.query_params.get('q')
-        queryset = Branches.objects.filter(branch__contains=branch).order_by('ifsc')
-        return queryset
+        if branch:
+            queryset = Branches.objects.filter(branch__contains=branch).order_by('ifsc')
+            return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = BranchSerialzier(queryset, many=True)
+        if not queryset:
+            return Response({'message': 'Branch not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(data=serializer.data)
 
 
 class LargeResultsSetPagination(PageNumberPagination):
