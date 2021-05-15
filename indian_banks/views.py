@@ -7,6 +7,7 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import NotFound,ParseError
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -25,7 +26,12 @@ class AutoCompleteView(ListAPIView, LimitOffsetPagination):
         branch = self.request.query_params.get('q',None)
         if branch:
             queryset = Branches.objects.filter(branch__contains=branch).order_by('ifsc')
-            return queryset
+            if queryset:
+                return queryset
+            else:
+                raise NotFound
+        else:
+            raise ParseError("Branch name not supplied")
 
 class SearchView(ListAPIView, LimitOffsetPagination):
     """Search API view for getting the possible matches across all columns and rows"""
