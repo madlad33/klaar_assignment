@@ -29,9 +29,10 @@ class AutoCompleteView(ListAPIView, LimitOffsetPagination):
             if queryset:
                 return queryset
             else:
-                raise NotFound
+                raise NotFound("Branch not found")
         else:
             raise ParseError("Branch name not supplied")
+
 
 class SearchView(ListAPIView, LimitOffsetPagination):
     """Search API view for getting the possible matches across all columns and rows"""
